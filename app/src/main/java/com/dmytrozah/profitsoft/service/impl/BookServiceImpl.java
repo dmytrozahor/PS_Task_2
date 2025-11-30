@@ -61,17 +61,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public BookDetailsDto getBook(long id) {
-        BookData book = this.getOrThrow(id);
-        AuthorInfoDto authorDto = authorService.resolveAuthorInfo(book.getAuthor().getId());
-
-        return BookDetailsDto.builder()
-                .id(id)
-                .title(book.getTitle())
-                .publication(book.getPublication())
-                .lastUpdateTime(book.getLastUpdateTime())
-                .authorDto(authorDto)
-                .genres(book.getGenres())
-                .build();
+        return toDetailsDto(id);
     }
 
     @Override

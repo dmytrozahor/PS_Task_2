@@ -20,13 +20,14 @@ repositories {
 }
 
 dependencies {
+    implementation(project(":core-api"))
+
     compileOnly("org.projectlombok:lombok:1.18.42")
     annotationProcessor("org.projectlombok:lombok:1.18.42")
 
     testCompileOnly("org.projectlombok:lombok:1.18.42")
     testAnnotationProcessor("org.projectlombok:lombok:1.18.42")
 
-    implementation(project(":core-api"))
     implementation("com.fasterxml.jackson.core:jackson-databind")
 
     implementation("org.springframework.boot:spring-boot-starter-validation")

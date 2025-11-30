@@ -1,17 +1,16 @@
 package com.dmytrozah.profitsoft.rest.dto.book;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 /**
  * Short information on {@link com.dmytrozah.profitsoft.domain.entity.BookData}
  * to display in a list
  */
 
-@Getter @Setter
+@Getter
 @Builder
+@AllArgsConstructor
 public class BookInfoDto {
 
     @JsonProperty("id")
