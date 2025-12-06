@@ -1,28 +1,21 @@
 package com.dmytrozah.profitsoft.service;
 
-import com.dmytrozah.profitsoft.domain.entity.BookAuthorData;
-import com.dmytrozah.profitsoft.rest.dto.author.AuthorDetailsDto;
-import com.dmytrozah.profitsoft.rest.dto.author.AuthorInfoDto;
-import com.dmytrozah.profitsoft.rest.dto.author.AuthorQueryDto;
-import com.dmytrozah.profitsoft.rest.dto.author.AuthorSaveDto;
-
-import java.util.List;
+import com.dmytrozah.profitsoft.domain.dto.author.AuthorDetailsDto;
+import com.dmytrozah.profitsoft.domain.dto.author.AuthorListDto;
+import com.dmytrozah.profitsoft.domain.dto.author.AuthorQueryDto;
+import com.dmytrozah.profitsoft.domain.dto.author.AuthorSaveDto;
 
 public interface BookAuthorService {
 
     long createAuthor(AuthorSaveDto dto);
 
-    void updateAuthor(AuthorSaveDto saveDto);
-
-    BookAuthorData resolveAuthor(String displayName);
-
-    boolean existsAuthor(String displayName);
-
-    AuthorInfoDto resolveAuthorInfo(long id);
+    void updateAuthor(long id, AuthorSaveDto saveDto);
 
     AuthorDetailsDto resolveAuthorDetails(long id);
 
-    List<AuthorInfoDto> query(AuthorQueryDto dto);
+    AuthorDetailsDto resolveAuthorDetails(String canonicalName);
+
+    AuthorListDto query(AuthorQueryDto dto);
 
     void delete(long id);
 }

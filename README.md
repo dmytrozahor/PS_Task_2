@@ -27,17 +27,21 @@ We should develop a Spring Boot service, which would store the objects (related 
 | `PUT /api/authors/{id}`    | ...                                               | (update)                                                                                                                                     |
 | `DELETE /api/authors/{id}` | ...                                               | (delete)                                                                                                                                     |
 
-- 
-
 ### Implementation
 
-- Following entities were introduced: `BookData`, `BookAuthor` in the domain and diverse POJOs for the `Rest API` 
-- `Layered Architecture`, `Decoupling`, `SOLID` were maintained to provide a clear structure of the application. `*` In particular was developed modular structure with the usage of `Gradle` to separate benchmarks (`jmh`) and main program (`core`) logic
+- The following entities were introduced: `BookData`, `BookAuthor` in the domain and diverse POJOs for the `Rest API`
+- `MapStruct` was used to implement mappings between JPA entities and `DTOs`.
+- `Liquibase` was used for database migrations setup and schema validation.
+- `Layered Architecture`, `Decoupling`, `SOLID` were maintained to provide a clear structure of the application.
+
+- In particular was developed modular structure with usage of `Gradle` to separate domain, Dto classes (`core-api`) and
+  main program (`app`) logic.
 - Test coverage with `integrational` and `Unit tests` using `JUnit 5` and `Spring WebMvc-Test` was established as well.
 
 ### Building the application
 Use the task `fatJar` in the `app` module or select the `./app/core` as your working directory and run it from the IDE.
 
-### Notes
+### Dependency diagrams (UMLs)
 
-### Dependency diagram (UML)
+![img.png](img/Services-UML.png)
+![img.png](img/Entity-UML.png)

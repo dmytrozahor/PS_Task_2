@@ -1,5 +1,6 @@
 package com.dmytrozah.profitsoft;
 
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
@@ -12,23 +13,14 @@ import org.springframework.context.annotation.ComponentScan;
 /*
 @Slf4j
 */
-public class Task2App /*implements CommandLineRunner */{
-
-    /*private Booksclient booksclient;
-*/
+public class Task2App implements CommandLineRunner {
 
     public static void main(String[] args) {
         SpringApplication.run(Task2App.class, args);
     }
 
-/*    @Override
+    @Override
     public void run(String... args) throws Exception {
-        BookSaveDto dto = BookSaveDto.builder()
-                .title("Test")
-                .build();
 
-        int bookId = booksclient.createBook(dto);
-
-        log.info("Created book with id {}", bookId);
-    }*/
+    }
 }

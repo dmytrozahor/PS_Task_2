@@ -1,45 +1,38 @@
 package com.dmytrozah.profitsoft.service.impl;
 
+import com.dmytrozah.profitsoft.domain.dto.ReportGenerationDto;
+import com.dmytrozah.profitsoft.domain.dto.author.AuthorDetailsDto;
+import com.dmytrozah.profitsoft.domain.dto.book.*;
 import com.dmytrozah.profitsoft.domain.entity.BookAuthorData;
 import com.dmytrozah.profitsoft.domain.entity.BookData;
-import com.dmytrozah.profitsoft.domain.repository.BookAuthorRepository;
+import com.dmytrozah.profitsoft.domain.entity.mapper.AuthorMapper;
+import com.dmytrozah.profitsoft.domain.entity.mapper.BookMapper;
 import com.dmytrozah.profitsoft.domain.repository.BookRepository;
-import com.dmytrozah.profitsoft.rest.dto.BookListDto;
-import com.dmytrozah.profitsoft.rest.dto.ReportGenerationDto;
-import com.dmytrozah.profitsoft.rest.dto.author.AuthorDetailsDto;
-import com.dmytrozah.profitsoft.rest.dto.author.AuthorInfoDto;
-import com.dmytrozah.profitsoft.rest.dto.book.*;
 import com.dmytrozah.profitsoft.service.BookAuthorService;
 import com.dmytrozah.profitsoft.service.BookService;
-import com.dmytrozah.profitsoft.service.exception.EntityNotFoundException;
+import com.dmytrozah.profitsoft.service.exception.BookNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import tools.jackson.core.type.TypeReference;
-import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class BookServiceImpl implements BookService {
+    private final AuthorMapper authorMapper;
 
-    static final ObjectMapper mapper = new ObjectMapper();
+    private final BookMapper bookMapper;
 
     private final BookRepository bookRepository;
-
-    private final BookAuthorRepository authorRepository;
 
     private final BookAuthorService authorService;
 
@@ -64,32 +57,8 @@ public class BookServiceImpl implements BookService {
         return toDetailsDto(id);
     }
 
-    @Override
-    public BookUploadResultDto uploadFromFile(final MultipartFile file) throws FileUploadException {
-        try {
-            byte[] bytes = file.getBytes();
-
-            List<BookUploadDto> uploads = mapper.readValue(bytes, new TypeReference<>() {});
-            List<BookData> data = uploads.stream()
-                    .map(this::convertFromUpload)
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .toList();
-
-            final int successfulUploads = bookRepository.saveAll(data).size();
-
-            return BookUploadResultDto.builder()
-                    .successfulUploads(successfulUploads)
-                    .failedUploads(uploads.size() - successfulUploads)
-                    .build();
-        } catch (IOException e){
-            throw new FileUploadException(e.getMessage());
-        }
-    }
-
     private BookData getOrThrow(final long id){
-        return bookRepository.findById(id).orElseThrow(() ->
-                new EntityNotFoundException("Requested Book %s not found.".formatted(id)));
+        return bookRepository.findById(id).orElseThrow(() -> new BookNotFoundException(id));
     }
 
     private void validateBook(final BookSaveDto saveDto){
@@ -110,52 +79,23 @@ public class BookServiceImpl implements BookService {
     }
 
     private void updateFromDto(final BookData data, final BookSaveDto saveDto){
-        data.setAuthor(authorService.resolveAuthor(saveDto.getAuthor()));
-        data.setTitle(saveDto.getTitle());
-        data.setPublication(saveDto.getPublishDate());
-        data.setGenres(saveDto.getGenres());
+        final AuthorDetailsDto detailsDto = authorService.resolveAuthorDetails(saveDto.getAuthorId());
+        final BookAuthorData authorData = authorMapper.toEntity(detailsDto);
+        data.setAuthor(authorData);
+
+        this.bookMapper.updateEntityFromDto(saveDto, data, authorData);
 
         bookRepository.save(data);
         bookRepository.flush();
     }
 
     private BookData fromSaveDto(BookSaveDto saveDto){
-        final BookData bookData = new BookData();
+        final AuthorDetailsDto detailsDto = authorService.resolveAuthorDetails(saveDto.getAuthorId());
+        final BookData data = this.bookMapper.toEntity(saveDto);
 
-        if (!authorService.existsAuthor(saveDto.getAuthor()))
-            throw new EntityNotFoundException("Author %s not found.".formatted(saveDto.getAuthor()));
+        data.setAuthor(authorMapper.toEntity(detailsDto));
 
-        bookData.setTitle(saveDto.getTitle());
-        bookData.setAuthor(authorService.resolveAuthor(saveDto.getAuthor()));
-        bookData.setPublication(saveDto.getPublishDate());
-        bookData.setGenres(saveDto.getGenres());
-
-        return bookData;
-    }
-
-    private BookInfoDto toInfoDto(final BookData data){
-        return BookInfoDto.builder()
-                .id(data.getId())
-                .title(data.getTitle())
-                .fullAuthorName(data.getAuthor().getName())
-                .authorId(data.getAuthor().getId())
-                .build();
-    }
-
-    private Optional<BookData> convertFromUpload(BookUploadDto bookUploadDto) throws EntityNotFoundException {
-        final BookData bookData = new BookData();
-
-        if (!authorRepository.existsByNameContainingIgnoreCase(bookUploadDto.getAuthor()))
-            return Optional.empty();
-
-        if (bookRepository.existsByTitleAndAuthorName(bookUploadDto.getTitle(), bookUploadDto.getAuthor()))
-            return Optional.empty();
-
-        bookData.setTitle(bookUploadDto.getTitle());
-        bookData.setAuthor(authorService.resolveAuthor(bookUploadDto.getAuthor()));
-        bookData.setGenres(bookUploadDto.getGenres());
-
-        return Optional.of(bookData);
+        return data;
     }
 
     @Override
@@ -170,7 +110,7 @@ public class BookServiceImpl implements BookService {
         }
 
         final List<BookData> data = page.getContent();
-        final List<BookInfoDto> infos = data.stream().map(this::toInfoDto).toList();
+        final List<BookInfoDto> infos = data.stream().map(bookMapper::toInfoDto).toList();
 
         return BookListDto.builder()
                 .totalPages(page.getTotalPages())

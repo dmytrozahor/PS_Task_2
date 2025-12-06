@@ -2,6 +2,7 @@ package com.dmytrozah.profitsoft.rest.controller;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.EntityExistsException;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -22,10 +23,14 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage());
     }
 
-
     @ExceptionHandler(EntityExistsException.class)
-    public ResponseEntity<Object> handleGenericException(Exception e) {
+    public ResponseEntity<Object> handleEntityExists(final Exception e) {
         return buildErrorResponse(HttpStatus.CONFLICT, e.getMessage());
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<Object> handleEntityNotFound(final Exception e) {
+        return buildErrorResponse(HttpStatus.NOT_FOUND, e.getMessage());
     }
 
     @ExceptionHandler(MismatchedInputException.class)

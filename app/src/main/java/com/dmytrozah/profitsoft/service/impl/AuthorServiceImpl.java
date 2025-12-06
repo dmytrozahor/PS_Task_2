@@ -1,16 +1,17 @@
 package com.dmytrozah.profitsoft.service.impl;
 
+import com.dmytrozah.profitsoft.domain.dto.author.*;
 import com.dmytrozah.profitsoft.domain.entity.BookAuthorData;
+import com.dmytrozah.profitsoft.domain.entity.mapper.AuthorMapper;
+import com.dmytrozah.profitsoft.domain.entity.mapper.AuthorNameMapper;
+import com.dmytrozah.profitsoft.domain.entity.mapper.LivingAddressMapper;
 import com.dmytrozah.profitsoft.domain.repository.BookAuthorRepository;
 import com.dmytrozah.profitsoft.domain.repository.BookRepository;
-import com.dmytrozah.profitsoft.rest.dto.author.AuthorDetailsDto;
-import com.dmytrozah.profitsoft.rest.dto.author.AuthorInfoDto;
-import com.dmytrozah.profitsoft.rest.dto.author.AuthorQueryDto;
-import com.dmytrozah.profitsoft.rest.dto.author.AuthorSaveDto;
 import com.dmytrozah.profitsoft.service.BookAuthorService;
-import com.dmytrozah.profitsoft.service.exception.EntityNotFoundException;
-import jakarta.persistence.EntityExistsException;
+import com.dmytrozah.profitsoft.service.exception.AuthorExistsByName;
+import com.dmytrozah.profitsoft.service.exception.AuthorNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -20,13 +21,20 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AuthorServiceImpl implements BookAuthorService {
     private final BookAuthorRepository repository;
-
     private final BookRepository bookRepository;
+
+    private final AuthorMapper authorMapper;
+    private final AuthorNameMapper authorNameMapper;
+    private final LivingAddressMapper addressMapper;
 
     @Override
     public long createAuthor(final AuthorSaveDto saveDto) {
-        if (repository.existsByNameContainingIgnoreCase(saveDto.getName())){
-            throw new EntityExistsException("Author already exists.");
+        final AuthorNameDto nameDto = saveDto.getName();
+
+        String canonicalName = nameDto.firstName() + " " + nameDto.lastName();
+
+        if (repository.existsByCanonicalNameIgnoreCase(canonicalName)) {
+            throw new AuthorExistsByName(saveDto);
         }
 
         this.validateAuthor(saveDto);
@@ -35,37 +43,40 @@ public class AuthorServiceImpl implements BookAuthorService {
     }
 
     @Override
-    public void updateAuthor(final AuthorSaveDto saveDto){
+    public void updateAuthor(long id, final AuthorSaveDto saveDto) {
         this.validateAuthor(saveDto);
 
-        repository.save(updateFromDto(saveDto));
-    }
+        BookAuthorData author = getOrThrow(id);
 
-    @Override
-    public BookAuthorData resolveAuthor(String displayName) {
-        return getOrThrow(displayName);
-    }
+        this.authorMapper.updateFromDto(saveDto, author);
 
-    @Override
-    public boolean existsAuthor(String displayName) {
-        return resolveAuthor(displayName) != null;
-    }
-
-    @Override
-    public AuthorInfoDto resolveAuthorInfo(long id) {
-        return toInfoDto(getOrThrow(id));
+        repository.save(author);
+        repository.flush();
     }
 
     @Override
     public AuthorDetailsDto resolveAuthorDetails(long id){
-        return toDetailsDto(getOrThrow(id));
+        return authorMapper.toDetailsDto(getOrThrow(id), bookRepository);
     }
 
     @Override
-    public List<AuthorInfoDto> query(final AuthorQueryDto queryDto) {
-        return repository.findAll(
+    public AuthorDetailsDto resolveAuthorDetails(String canonicalName) {
+        return authorMapper.toDetailsDto(getOrThrow(canonicalName), bookRepository);
+    }
+
+    @Override
+    public AuthorListDto query(final AuthorQueryDto queryDto) {
+        final Page<BookAuthorData> page = repository.findAll(
                 PageRequest.of(queryDto.getPage(), queryDto.getSize())
-        ).map(this::toInfoDto).toList();
+        );
+
+        final List<AuthorInfoDto> infos = page.getContent().stream()
+                .map(authorMapper::toInfoDto).toList();
+
+        return AuthorListDto.builder()
+                .totalPages(page.getTotalPages())
+                .list(infos)
+                .build();
     }
 
     @Override
@@ -73,48 +84,17 @@ public class AuthorServiceImpl implements BookAuthorService {
         repository.delete(getOrThrow(id));
     }
 
-    private BookAuthorData updateFromDto(AuthorSaveDto saveDto){
-        BookAuthorData author = getOrThrow(saveDto.getName());
-        author.setEmail(saveDto.getEmail());
-        author.setContactAddress(saveDto.getContactAddress());
-
-        return author;
-    }
-
-    private AuthorDetailsDto toDetailsDto(BookAuthorData author){
-        return AuthorDetailsDto.builder()
-                .id(author.getId())
-                .name(author.getName())
-                .email(author.getEmail())
-                .contactAddress(author.getContactAddress())
-                .books(bookRepository.findAllByAuthorId(author.getId()).size())
-                .build();
-    }
-
-    private AuthorInfoDto toInfoDto(BookAuthorData author) {
-        return AuthorInfoDto.builder()
-                .id(author.getId())
-                .name(author.getName())
-                .build();
-    }
-
     private BookAuthorData fromDto(AuthorSaveDto authorSaveDto) {
-        final BookAuthorData authorData = new BookAuthorData();
-
-        authorData.setName(authorSaveDto.getName());
-
-        return authorData;
+        return authorMapper.toEntity(authorSaveDto);
     }
 
-    private BookAuthorData getOrThrow(String name) {
-        return repository.findByName(name).orElseThrow(() ->
-                new EntityNotFoundException("Author with nane %s not found".formatted(name)));
+    private BookAuthorData getOrThrow(String canonicalName) {
+        return repository.findByCanonicalName(canonicalName)
+                .orElseThrow(() -> new AuthorNotFoundException(canonicalName));
     }
 
     private BookAuthorData getOrThrow(long id){
-        return repository.findById(id).orElseThrow(() ->
-                new EntityNotFoundException("Requested author %s not found.".formatted(id))
-        );
+        return repository.findById(id).orElseThrow(() -> new AuthorNotFoundException(id));
     }
 
     private void validateAuthor(final AuthorSaveDto dto){

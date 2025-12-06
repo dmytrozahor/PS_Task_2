@@ -1,6 +1,7 @@
 package com.dmytrozah.profitsoft.config;
 
 import com.zaxxer.hikari.HikariDataSource;
+import liquibase.integration.spring.SpringLiquibase;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +13,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @Configuration
 public class JpaConfig {
 
-    @Value("${jdbc.uri:jdbc:postgresql://localhost:5432/profitsoft}")
+    @Value("${jdbc.uri:jdbc:postgresql://localhost:5432/profitsoft?sslmode=disable}")
     private String jdbcUrl;
 
     @Value("${jdbc.user:postgres}")
@@ -33,4 +34,11 @@ public class JpaConfig {
         return ds;
     }
 
+    @Bean
+    public SpringLiquibase liquibase() {
+        SpringLiquibase liquibase = new SpringLiquibase();
+        liquibase.setChangeLog("classpath:db/changelog/db.changelog-master.xml");
+        liquibase.setDataSource(dataSource());
+        return liquibase;
+    }
 }

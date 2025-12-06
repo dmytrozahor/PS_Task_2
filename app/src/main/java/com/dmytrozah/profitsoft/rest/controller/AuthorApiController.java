@@ -1,17 +1,15 @@
 package com.dmytrozah.profitsoft.rest.controller;
 
-import com.dmytrozah.profitsoft.rest.dto.RestResponse;
-import com.dmytrozah.profitsoft.rest.dto.author.AuthorDetailsDto;
-import com.dmytrozah.profitsoft.rest.dto.author.AuthorInfoDto;
-import com.dmytrozah.profitsoft.rest.dto.author.AuthorQueryDto;
-import com.dmytrozah.profitsoft.rest.dto.author.AuthorSaveDto;
+import com.dmytrozah.profitsoft.domain.dto.RestResponse;
+import com.dmytrozah.profitsoft.domain.dto.author.AuthorDetailsDto;
+import com.dmytrozah.profitsoft.domain.dto.author.AuthorListDto;
+import com.dmytrozah.profitsoft.domain.dto.author.AuthorQueryDto;
+import com.dmytrozah.profitsoft.domain.dto.author.AuthorSaveDto;
 import com.dmytrozah.profitsoft.service.BookAuthorService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/authors")
@@ -30,8 +28,9 @@ public class AuthorApiController {
 
     @PutMapping("{id}")
     @ResponseStatus(HttpStatus.OK)
-    public RestResponse updateAuthor(@Valid @RequestBody AuthorSaveDto saveDto){
-        authorService.updateAuthor(saveDto);
+    public RestResponse updateAuthor(@PathVariable long id, @Valid @RequestBody AuthorSaveDto saveDto) {
+        System.out.println(id);
+        authorService.updateAuthor(id, saveDto);
 
         return RestResponse.builder()
                 .message("OK")
@@ -44,7 +43,7 @@ public class AuthorApiController {
     }
 
     @PostMapping("_list")
-    public List<AuthorInfoDto> getAuthors(@Valid @RequestBody AuthorQueryDto queryDto){
+    public AuthorListDto getAuthors(@Valid @RequestBody AuthorQueryDto queryDto) {
         return authorService.query(queryDto);
     }
 

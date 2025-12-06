@@ -1,11 +1,11 @@
 package com.dmytrozah.profitsoft.service;
 
-import com.dmytrozah.profitsoft.rest.dto.BookListDto;
-import com.dmytrozah.profitsoft.rest.dto.ReportGenerationDto;
-import com.dmytrozah.profitsoft.rest.dto.book.*;
+import com.dmytrozah.profitsoft.domain.dto.ReportGenerationDto;
+import com.dmytrozah.profitsoft.domain.dto.book.BookDetailsDto;
+import com.dmytrozah.profitsoft.domain.dto.book.BookListDto;
+import com.dmytrozah.profitsoft.domain.dto.book.BookQueryDto;
+import com.dmytrozah.profitsoft.domain.dto.book.BookSaveDto;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.tomcat.util.http.fileupload.FileUploadException;
-import org.springframework.web.multipart.MultipartFile;
 
 public interface BookService {
 
@@ -14,8 +14,6 @@ public interface BookService {
     void updateBook(long id, BookSaveDto dto);
 
     BookDetailsDto getBook(long id);
-
-    BookUploadResultDto uploadFromFile(final MultipartFile file) throws FileUploadException;
 
     BookListDto listQuery(final BookQueryDto queryDto);
 
