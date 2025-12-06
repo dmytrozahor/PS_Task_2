@@ -8,6 +8,6 @@ public record AuthorAddressDto(String street,
                                String city,
                                String country,
                                @JsonProperty("post_code")
-                               int postCode
+                               String postCode
 ) {
 }
