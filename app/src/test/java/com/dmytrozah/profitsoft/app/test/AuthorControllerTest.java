@@ -49,7 +49,7 @@ class AuthorControllerTest {
     private int houseNum;
     private String city;
     private String country;
-    private int postCode;
+    private String postCode;
 
     @BeforeEach
     void setup() {
@@ -61,7 +61,7 @@ class AuthorControllerTest {
         houseNum = 12;
         city = "Karlsruhe";
         country = "Germany";
-        postCode = 76131;
+        postCode = "76131";
     }
 
     @AfterEach
@@ -70,7 +70,7 @@ class AuthorControllerTest {
     }
 
     private String buildAuthorSaveJson(String first, String last, String emailVal, String phoneVal,
-                                       String streetVal, int house, String cityVal, String countryVal, int postCodeVal) {
+                                       String streetVal, int house, String cityVal, String countryVal, String postCodeVal) {
         return """
                 {
                   "name": {
@@ -82,7 +82,7 @@ class AuthorControllerTest {
                     "house_number": %d,
                     "city": "%s",
                     "country": "%s",
-                    "post_code": %d
+                    "post_code": %s
                   },
                   "phone_number": "%s",
                   "email": "%s"
@@ -152,7 +152,7 @@ class AuthorControllerTest {
         int newHouse = 99;
         String newCity = "Berlin";
         String newCountry = "Germany";
-        int newPost = 10115;
+        String newPost = "10115";
 
         String updateBody = buildAuthorSaveJson(newFirst, newLast, newEmail, newPhone, newStreet, newHouse, newCity, newCountry, newPost);
 
