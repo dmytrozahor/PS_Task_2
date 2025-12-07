@@ -21,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/books")
 @RequiredArgsConstructor
 public class BookApiController {
-
     private final BookService bookService;
 
     private final BookUploadService uploadService;
