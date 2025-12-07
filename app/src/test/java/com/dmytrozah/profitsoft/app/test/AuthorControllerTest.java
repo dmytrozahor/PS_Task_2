@@ -2,6 +2,7 @@ package com.dmytrozah.profitsoft.app.test;
 
 import com.dmytrozah.profitsoft.Task2App;
 import com.dmytrozah.profitsoft.domain.dto.RestResponse;
+import com.dmytrozah.profitsoft.domain.dto.author.AuthorDetailsDto;
 import com.dmytrozah.profitsoft.domain.dto.author.AuthorListDto;
 import com.dmytrozah.profitsoft.domain.entity.BookAuthorData;
 import com.dmytrozah.profitsoft.domain.entity.embeds.AuthorLivingAddress;
@@ -230,6 +231,42 @@ class AuthorControllerTest {
 
         mockMvc.perform(delete("/api/authors/" + id))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void getAuthor_shouldReturnDetailsJson() throws Exception {
+        // create author
+        String body = buildAuthorSaveJson(firstName, lastName, email, phone, street, houseNum, city, country, postCode);
+
+        MvcResult res = mockMvc.perform(post("/api/authors")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isCreated()).andReturn();
+
+        long authorId = Long.parseLong(parseResponse(res, RestResponse.class).getMessage());
+
+        // GET author details
+        MvcResult getRes = mockMvc.perform(get("/api/authors/" + authorId))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        AuthorDetailsDto dto = parseResponse(getRes, AuthorDetailsDto.class);
+
+        assertThat(dto).isNotNull();
+        assertThat(dto.getId()).isEqualTo(authorId);
+        assertThat(dto.getName()).isNotNull();
+        assertThat(dto.getName().firstName()).isEqualTo(firstName);
+        assertThat(dto.getName().lastName()).isEqualTo(lastName);
+
+        assertThat(dto.getEmail()).isEqualTo(email);
+        assertThat(dto.getPhoneNumber()).isEqualTo(phone);
+
+        assertThat(dto.getAddress()).isNotNull();
+        assertThat(dto.getAddress().street()).isEqualTo(street);
+        assertThat(dto.getAddress().houseNum()).isEqualTo(houseNum);
+        assertThat(dto.getAddress().city()).isEqualTo(city);
+        assertThat(dto.getAddress().country()).isEqualTo(country);
+        assertThat(dto.getBooks()).isEqualTo(0); // newly created author has no published books yet
     }
 
     private <T> T parseResponse(MvcResult result, Class<T> c) {
