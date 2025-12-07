@@ -15,7 +15,6 @@ import tools.jackson.databind.exc.MismatchedInputException;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
     @ExceptionHandler(IllegalArgumentException.class)
     private ResponseEntity<Object> illegalArgumentException(IllegalArgumentException e){
         log.warn("IllegalArgumentException is thrown: {}", e.getMessage());

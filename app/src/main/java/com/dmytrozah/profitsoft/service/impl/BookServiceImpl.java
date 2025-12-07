@@ -55,48 +55,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public BookDetailsDto getBook(long id) {
-        return toDetailsDto(id);
-    }
-
-    private BookData getOrThrow(final long id){
-        return bookRepository.findById(id).orElseThrow(() -> new BookNotFoundException(id));
-    }
-
-    private void validateBook(final BookSaveDto saveDto){
-        if (Objects.nonNull(saveDto.getPublishDate())
-                && saveDto.getPublishDate().isAfter(LocalDate.now())){
-            throw new IllegalArgumentException("Publish Date is after Now");
-        }
-    }
-
-    private BookDetailsDto toDetailsDto(long bookId){
-        BookData book = this.getOrThrow(bookId);
-
-        return BookDetailsDto.builder()
-                .title(book.getTitle())
-                .lastUpdateTime(book.getLastUpdateTime())
-                .publication(book.getPublication())
-                .build();
-    }
-
-    private void updateFromDto(final BookData data, final BookSaveDto saveDto){
-        final AuthorDetailsDto detailsDto = authorService.resolveAuthorDetails(saveDto.getAuthorId());
-        final BookAuthorData authorData = authorMapper.toEntity(detailsDto);
-        data.setAuthor(authorData);
-
-        this.bookMapper.updateEntityFromDto(saveDto, data, authorData);
-
-        bookRepository.save(data);
-        bookRepository.flush();
-    }
-
-    private BookData fromSaveDto(BookSaveDto saveDto){
-        final AuthorDetailsDto detailsDto = authorService.resolveAuthorDetails(saveDto.getAuthorId());
-        final BookData data = this.bookMapper.toEntity(saveDto);
-
-        data.setAuthor(authorMapper.toEntity(detailsDto));
-
-        return data;
+        return bookMapper.toDetailsDto(this.getOrThrow(id));
     }
 
     @Override
@@ -154,5 +113,36 @@ public class BookServiceImpl implements BookService {
         } catch (IOException e) {
             throw new ReportGenerationException(e);
         }
+    }
+
+    private BookData getOrThrow(final long id) {
+        return bookRepository.findById(id).orElseThrow(() -> new BookNotFoundException(id));
+    }
+
+    private void validateBook(final BookSaveDto saveDto) {
+        if (Objects.nonNull(saveDto.getPublishDate())
+                && saveDto.getPublishDate().isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("Publish Date is after Now");
+        }
+    }
+
+    private void updateFromDto(final BookData data, final BookSaveDto saveDto) {
+        final AuthorDetailsDto detailsDto = authorService.resolveAuthorDetails(saveDto.getAuthorId());
+        final BookAuthorData authorData = authorMapper.toEntity(detailsDto);
+        data.setAuthor(authorData);
+
+        this.bookMapper.updateEntityFromDto(saveDto, data, authorData);
+
+        bookRepository.save(data);
+        bookRepository.flush();
+    }
+
+    private BookData fromSaveDto(BookSaveDto saveDto) {
+        final AuthorDetailsDto detailsDto = authorService.resolveAuthorDetails(saveDto.getAuthorId());
+        final BookData data = this.bookMapper.toEntity(saveDto);
+
+        data.setAuthor(authorMapper.toEntity(detailsDto));
+
+        return data;
     }
 }
