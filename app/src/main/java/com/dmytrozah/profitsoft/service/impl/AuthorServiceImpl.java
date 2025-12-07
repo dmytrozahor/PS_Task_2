@@ -3,8 +3,6 @@ package com.dmytrozah.profitsoft.service.impl;
 import com.dmytrozah.profitsoft.domain.dto.author.*;
 import com.dmytrozah.profitsoft.domain.entity.BookAuthorData;
 import com.dmytrozah.profitsoft.domain.entity.mapper.AuthorMapper;
-import com.dmytrozah.profitsoft.domain.entity.mapper.AuthorNameMapper;
-import com.dmytrozah.profitsoft.domain.entity.mapper.LivingAddressMapper;
 import com.dmytrozah.profitsoft.domain.repository.BookAuthorRepository;
 import com.dmytrozah.profitsoft.domain.repository.BookRepository;
 import com.dmytrozah.profitsoft.service.BookAuthorService;
@@ -24,8 +22,6 @@ public class AuthorServiceImpl implements BookAuthorService {
     private final BookRepository bookRepository;
 
     private final AuthorMapper authorMapper;
-    private final AuthorNameMapper authorNameMapper;
-    private final LivingAddressMapper addressMapper;
 
     @Override
     public long createAuthor(final AuthorSaveDto saveDto) {
