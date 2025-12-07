@@ -5,6 +5,7 @@ import com.dmytrozah.profitsoft.domain.dto.RestResponse;
 import com.dmytrozah.profitsoft.domain.dto.author.AuthorInfoDto;
 import com.dmytrozah.profitsoft.domain.dto.book.BookDetailsDto;
 import com.dmytrozah.profitsoft.domain.dto.book.BookListDto;
+import com.dmytrozah.profitsoft.domain.dto.book.upload.BookUploadResultsResponse;
 import com.dmytrozah.profitsoft.domain.entity.BookAuthorData;
 import com.dmytrozah.profitsoft.domain.entity.BookData;
 import com.dmytrozah.profitsoft.domain.entity.embeds.AuthorName;
@@ -18,6 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import tools.jackson.databind.ObjectMapper;
@@ -358,6 +360,43 @@ public class BookControllerTest {
         assertThat(name).isNotNull();
         assertThat(name).contains(firstName);
         assertThat(name).contains(lastName);
+    }
+
+    @Test
+    public void upload_shouldCreateBooks_fromJsonFile() throws Exception {
+        BookAuthorData author = authorRepository.findAll().stream().findFirst().orElse(null);
+        assertThat(author).isNotNull();
+        long authorId = author.getId();
+
+        String payload = """
+                [
+                  {"title":"UP-1","authorName":"%s","authorId":%d,"genres":"A"},
+                  {"title":"UP-2","authorName":"NoSuchAuthor","authorId":-1,"genres":"B"}
+                ]
+                """.formatted(authorFullName, authorId);
+
+        MockMultipartFile file =
+                new MockMultipartFile(
+                        "file", "upload.json", MediaType.APPLICATION_JSON_VALUE, payload.getBytes());
+
+        MvcResult res = mockMvc.perform(multipart("/api/books/upload").file(file))
+                .andExpect(status().isCreated()).andReturn();
+
+        BookUploadResultsResponse resultDto = parseResponse(res, BookUploadResultsResponse.class);
+
+        assertThat(resultDto).isNotNull();
+
+        int successful = resultDto.getSuccessfulUploads();
+        int failed = resultDto.getFailedUploads();
+
+        assertThat(successful + failed).isEqualTo(2);
+
+        assertThat(bookRepository.count()).isEqualTo(successful);
+
+        if (successful > 0) {
+            boolean exists = bookRepository.findAll().stream().anyMatch(b -> b.getTitle().equals("UP-1"));
+            assertThat(exists).isTrue();
+        }
     }
 
     private <T> T parseResponse(MvcResult result, Class<T> c) {
