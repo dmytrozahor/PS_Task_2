@@ -98,6 +98,6 @@ public class AuthorServiceImpl implements BookAuthorService {
     }
 
     private void validateAuthor(final AuthorSaveDto dto){
-        // What to validate lol
+        // Nothing to validate
     }
 }

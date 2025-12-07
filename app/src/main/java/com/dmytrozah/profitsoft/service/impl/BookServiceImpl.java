@@ -11,6 +11,7 @@ import com.dmytrozah.profitsoft.domain.repository.BookRepository;
 import com.dmytrozah.profitsoft.service.BookAuthorService;
 import com.dmytrozah.profitsoft.service.BookService;
 import com.dmytrozah.profitsoft.service.exception.BookNotFoundException;
+import com.dmytrozah.profitsoft.service.exception.ReportGenerationException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -106,7 +107,9 @@ public class BookServiceImpl implements BookService {
             page = bookRepository.findAll(PageRequest.of(queryDto.getPage(), queryDto.getSize()));
         } else  {
             page = bookRepository.findAllByAuthorId(
-                    Long.parseLong(queryDto.getAuthorId()), PageRequest.of(queryDto.getPage(), queryDto.getSize()));
+                    Long.parseLong(queryDto.getAuthorId()),
+                    PageRequest.of(queryDto.getPage(), queryDto.getSize())
+            );
         }
 
         final List<BookData> data = page.getContent();
@@ -149,7 +152,7 @@ public class BookServiceImpl implements BookService {
             outputStream.write(builder.toString().getBytes());
             outputStream.flush();
         } catch (IOException e) {
-            throw new RuntimeException("Error generating report file", e);
+            throw new ReportGenerationException(e);
         }
     }
 }
