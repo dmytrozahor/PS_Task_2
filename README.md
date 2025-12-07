@@ -28,6 +28,10 @@ We should develop a Spring Boot service, which would store the objects (related 
 | `PUT /api/authors/{id}`    | ...                                               | (update)                                                                                                                                     |
 | `DELETE /api/authors/{id}` | ...                                               | (delete)                                                                                                                                     |
 
+- Liquibase should be used for database migrations.
+- Integration tests are to be written.
+- A file for data import should be included in the project and be conform with to the liquibase schema.
+
 ### Implementation
 
 - The following entities were introduced: `BookData`, `BookAuthor` in the domain and diverse POJOs for the `Rest API`
@@ -35,10 +39,13 @@ We should develop a Spring Boot service, which would store the objects (related 
 - `Liquibase` was used for database migrations setup and schema validation.
 - `Layered Architecture`, `Decoupling`, `SOLID` were maintained to provide a clear structure of the application.
 
-- In particular was developed modular structure with usage of `Gradle` to separate domain, Dto classes (`core-api`) and
+- In particular was developed a modular structure with usage of `Gradle` to separate the domain, Dto classes (
+  `core-api`) and
   main program (`app`) logic.
 - Test coverage with `integrational` and `Unit tests` using `JUnit 5` and `Spring WebMvc-Test` was established as well.
 - `SSL` connection was configured for the `Rest API`
+- [upload_data.json](./data/upload_data.json) can be used to populate the database with the test data using the route
+  `/api/books/upload`.
 
 ### Building the application
 Use the task `fatJar` in the `app` module or select the `./app/core` as your working directory and run it from the IDE.
