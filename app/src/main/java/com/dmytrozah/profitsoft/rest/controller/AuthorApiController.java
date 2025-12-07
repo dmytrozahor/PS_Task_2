@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/authors")
 @RequiredArgsConstructor
 public class AuthorApiController {
-
     private final BookAuthorService authorService;
 
     @PostMapping
@@ -31,9 +30,7 @@ public class AuthorApiController {
     public RestResponse updateAuthor(@PathVariable long id, @Valid @RequestBody AuthorSaveDto saveDto) {
         authorService.updateAuthor(id, saveDto);
 
-        return RestResponse.builder()
-                .message("OK")
-                .build();
+        return RestResponse.builder().message("OK").build();
     }
 
     @GetMapping("{id}")
