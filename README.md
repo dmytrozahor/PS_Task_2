@@ -5,8 +5,8 @@
 ### Objective
 In this project we should utilize the object structure and hierarchy from the [PS-1](https://github.com/dmytrozahor/PS_Task_1) (**data domain**). 
 
-We should develop a Spring Boot service, which would store the objects (related as `Many-To-One`) in a database (*
-*Postgre**) and share access to them over an unified `Rest API`
+We should develop a Spring Boot service, which would store the objects (related as `Many-To-One`) in a database (
+*Postgre*) and share access to them over an unified `Rest API`
 
 ![img.png](img/img.png)
 
