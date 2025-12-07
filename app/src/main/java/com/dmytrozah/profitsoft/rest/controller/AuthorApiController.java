@@ -29,7 +29,6 @@ public class AuthorApiController {
     @PutMapping("{id}")
     @ResponseStatus(HttpStatus.OK)
     public RestResponse updateAuthor(@PathVariable long id, @Valid @RequestBody AuthorSaveDto saveDto) {
-        System.out.println(id);
         authorService.updateAuthor(id, saveDto);
 
         return RestResponse.builder()
