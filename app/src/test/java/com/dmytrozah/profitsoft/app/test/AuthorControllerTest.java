@@ -269,6 +269,40 @@ class AuthorControllerTest {
         assertThat(dto.getBooks()).isEqualTo(0); // newly created author has no published books yet
     }
 
+    @Test
+    public void testCreateAuthorInvalidName_shouldReturnBadRequest() throws Exception {
+        // Build payload with invalid/empty author name to trigger InvalidAuthorNameException
+        String invalidBody = """
+                {
+                  "name": {
+                    "first_name": "",
+                    "last_name": ""
+                  },
+                  "address": {
+                    "street": "%s",
+                    "house_number": %d,
+                    "city": "%s",
+                    "country": "%s",
+                    "post_code": %s
+                  },
+                  "phone_number": "%s",
+                  "email": "%s"
+                }
+                """.formatted(street, houseNum, city, country, postCode, phone, email);
+
+        MvcResult res = mockMvc.perform(post("/api/authors")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidBody))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        // Response body should contain the InvalidAuthorNameException message
+        String responseContent = res.getResponse().getContentAsString();
+        assertThat(responseContent).contains("Author name");
+        // Optionally ensure it references the invalid (empty) name pattern
+        assertThat(responseContent).contains("invalid");
+    }
+
     private <T> T parseResponse(MvcResult result, Class<T> c) {
         try {
             return mapper.readValue(result.getResponse().getContentAsString(), c);

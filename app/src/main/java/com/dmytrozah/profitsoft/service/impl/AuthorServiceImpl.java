@@ -8,6 +8,7 @@ import com.dmytrozah.profitsoft.domain.repository.BookRepository;
 import com.dmytrozah.profitsoft.service.BookAuthorService;
 import com.dmytrozah.profitsoft.service.exception.AuthorExistsByName;
 import com.dmytrozah.profitsoft.service.exception.AuthorNotFoundException;
+import com.dmytrozah.profitsoft.service.exception.InvalidAuthorNameException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -94,6 +95,8 @@ public class AuthorServiceImpl implements BookAuthorService {
     }
 
     private void validateAuthor(final AuthorSaveDto dto){
-        // Nothing to validate
+        if (dto.getName().firstName().isBlank() || dto.getName().lastName().isBlank()) {
+            throw new InvalidAuthorNameException(dto.getName());
+        }
     }
 }

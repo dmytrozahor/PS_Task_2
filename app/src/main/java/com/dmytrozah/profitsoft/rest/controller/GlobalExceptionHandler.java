@@ -1,5 +1,6 @@
 package com.dmytrozah.profitsoft.rest.controller;
 
+import com.dmytrozah.profitsoft.service.exception.InvalidAuthorNameException;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
@@ -30,6 +31,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<Object> handleEntityNotFound(final Exception e) {
         return buildErrorResponse(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    @ExceptionHandler(InvalidAuthorNameException.class)
+    public ResponseEntity<Object> handleInvalidName(final Exception e) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage());
     }
 
     @ExceptionHandler(MismatchedInputException.class)
