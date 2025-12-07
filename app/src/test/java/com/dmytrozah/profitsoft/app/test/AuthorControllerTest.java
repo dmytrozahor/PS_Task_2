@@ -235,7 +235,6 @@ class AuthorControllerTest {
 
     @Test
     public void getAuthor_shouldReturnDetailsJson() throws Exception {
-        // create author
         String body = buildAuthorSaveJson(firstName, lastName, email, phone, street, houseNum, city, country, postCode);
 
         MvcResult res = mockMvc.perform(post("/api/authors")
@@ -245,7 +244,6 @@ class AuthorControllerTest {
 
         long authorId = Long.parseLong(parseResponse(res, RestResponse.class).getMessage());
 
-        // GET author details
         MvcResult getRes = mockMvc.perform(get("/api/authors/" + authorId))
                 .andExpect(status().isOk())
                 .andReturn();

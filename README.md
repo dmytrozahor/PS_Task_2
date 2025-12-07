@@ -5,7 +5,8 @@
 ### Objective
 In this project we should utilize the object structure and hierarchy from the [PS-1](https://github.com/dmytrozahor/PS_Task_1) (**data domain**). 
 
-We should develop a Spring Boot service, which would store the objects (related as `Many-To-One`) in the database (**Postgre**) and share access to them over an unified `Rest API`
+We should develop a Spring Boot service, which would store the objects (related as `Many-To-One`) in a database (*
+*Postgre**) and share access to them over an unified `Rest API`
 
 ![img.png](img/img.png)
 
@@ -37,6 +38,7 @@ We should develop a Spring Boot service, which would store the objects (related 
 - In particular was developed modular structure with usage of `Gradle` to separate domain, Dto classes (`core-api`) and
   main program (`app`) logic.
 - Test coverage with `integrational` and `Unit tests` using `JUnit 5` and `Spring WebMvc-Test` was established as well.
+- `SSL` connection was configured for the `Rest API`
 
 ### Building the application
 Use the task `fatJar` in the `app` module or select the `./app/core` as your working directory and run it from the IDE.

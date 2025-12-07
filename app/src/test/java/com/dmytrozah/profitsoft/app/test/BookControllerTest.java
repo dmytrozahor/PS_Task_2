@@ -266,7 +266,6 @@ public class BookControllerTest {
         assertThat(author).isNotNull();
         long authorId = author.getId();
 
-        // Create 10 books, last one will have different author_name (simulate other)
         for (int i = 0; i < 10; i++) {
             String authorNameForBook = (i == 9) ? "Other Author" : authorFullName;
             String itBook = """
@@ -312,16 +311,13 @@ public class BookControllerTest {
 
         String filteredContent = filtered.getResponse().getContentAsString();
         assertThat(filteredContent).startsWith("Title,Author\n");
-        // The first 9 entries used the authorFullName above
         for (int i = 0; i < 9; i++) {
             assertThat(filteredContent).contains(baseBookTitle + i);
         }
-        // the 9th entry (index 9) used "Other Author" name so may be excluded depending on service behavior
     }
 
     @Test
     public void getBook_shouldReturnDetailsJson() throws Exception {
-        // create book first
         BookAuthorData author = authorRepository.findAll().stream().findFirst().orElse(null);
         assertThat(author).isNotNull();
         long authorId = author.getId();
@@ -348,7 +344,6 @@ public class BookControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        // parse into DTO using provided helper
         BookDetailsDto dto = parseResponse(getRes, BookDetailsDto.class);
 
         assertThat(dto).isNotNull();
@@ -356,11 +351,9 @@ public class BookControllerTest {
         assertThat(dto.getGenres()).isEqualTo(genres);
         assertThat(dto.getPublication()).isNotNull();
 
-        // nested author info: AuthorInfoDto has only id and name (single String)
         AuthorInfoDto authorDto = dto.getAuthorDto();
         assertThat(authorDto).isNotNull();
 
-        // name is a single String - verify it contains first and last name
         String name = authorDto.getName();
         assertThat(name).isNotNull();
         assertThat(name).contains(firstName);

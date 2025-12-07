@@ -67,7 +67,6 @@ public class BookUploadServiceImpl implements BookUploadService {
         }
     }
 
-
     private BookUploadResult convertFromUpload(BookUploadDto bookUploadDto) throws BookNotFoundException {
         BookData bookData = new BookData();
 
