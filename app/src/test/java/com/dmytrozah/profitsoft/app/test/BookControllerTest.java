@@ -2,6 +2,8 @@ package com.dmytrozah.profitsoft.app.test;
 
 import com.dmytrozah.profitsoft.Task2App;
 import com.dmytrozah.profitsoft.domain.dto.RestResponse;
+import com.dmytrozah.profitsoft.domain.dto.author.AuthorInfoDto;
+import com.dmytrozah.profitsoft.domain.dto.book.BookDetailsDto;
 import com.dmytrozah.profitsoft.domain.dto.book.BookListDto;
 import com.dmytrozah.profitsoft.domain.entity.BookAuthorData;
 import com.dmytrozah.profitsoft.domain.entity.BookData;
@@ -89,14 +91,6 @@ public class BookControllerTest {
     void cleanup() {
         bookRepository.deleteAll();
         authorRepository.deleteAll();
-    }
-
-    private <T> T parseResponse(MvcResult result, Class<T> c) {
-        try {
-            return mapper.readValue(result.getResponse().getContentAsString(), c);
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Test
@@ -323,5 +317,61 @@ public class BookControllerTest {
             assertThat(filteredContent).contains(baseBookTitle + i);
         }
         // the 9th entry (index 9) used "Other Author" name so may be excluded depending on service behavior
+    }
+
+    @Test
+    public void getBook_shouldReturnDetailsJson() throws Exception {
+        // create book first
+        BookAuthorData author = authorRepository.findAll().stream().findFirst().orElse(null);
+        assertThat(author).isNotNull();
+        long authorId = author.getId();
+
+        String create = """
+                {
+                  "title": "%s",
+                  "publish_date": "%s",
+                  "author_name": "%s",
+                  "author_id": %d,
+                  "genres": "%s"
+                }
+                """.formatted(baseBookTitle + "-Details", LocalDate.now().toString(), authorFullName, authorId, genres);
+
+        MvcResult cr = mockMvc.perform(post("/api/books")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(create))
+                .andExpect(status().isCreated()).andReturn();
+
+        long bookId = Long.parseLong(parseResponse(cr, RestResponse.class).getMessage());
+
+        // GET details
+        MvcResult getRes = mockMvc.perform(get("/api/books/" + bookId))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        // parse into DTO using provided helper
+        BookDetailsDto dto = parseResponse(getRes, BookDetailsDto.class);
+
+        assertThat(dto).isNotNull();
+        assertThat(dto.getTitle()).isEqualTo(baseBookTitle + "-Details");
+        assertThat(dto.getGenres()).isEqualTo(genres);
+        assertThat(dto.getPublication()).isNotNull();
+
+        // nested author info: AuthorInfoDto has only id and name (single String)
+        AuthorInfoDto authorDto = dto.getAuthorDto();
+        assertThat(authorDto).isNotNull();
+
+        // name is a single String - verify it contains first and last name
+        String name = authorDto.getName();
+        assertThat(name).isNotNull();
+        assertThat(name).contains(firstName);
+        assertThat(name).contains(lastName);
+    }
+
+    private <T> T parseResponse(MvcResult result, Class<T> c) {
+        try {
+            return mapper.readValue(result.getResponse().getContentAsString(), c);
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
