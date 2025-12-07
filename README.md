@@ -30,12 +30,12 @@ We should develop a Spring Boot service, which would store the objects (related 
 
 - Liquibase should be used for database migrations.
 - Integration tests are to be written.
-- A file for data import should be included in the project and be conform with to the liquibase schema.
+- A file for data import should be included in the project and be conforming to the liquibase schema.
 
 ### Implementation
 
 - The following entities were introduced: `BookData`, `BookAuthor` in the domain and diverse POJOs for the `Rest API`
-- `MapStruct` was used to implement mappings between JPA entities and `DTOs`.
+- `MapStruct` was used to implement mappings between `JPA` entities and `DTOs`.
 - `Liquibase` was used for database migrations setup and schema validation.
 - `Layered Architecture`, `Decoupling`, `SOLID` were maintained to provide a clear structure of the application.
 
