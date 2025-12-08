@@ -1,4 +1,4 @@
-## PS_Task_1
+## PS_Task_2
 
 <p>This project features one of the applications developed under the guidance and mentoring during an internship at the company ProfItSoft, the winter fall 2025.</p>
 
