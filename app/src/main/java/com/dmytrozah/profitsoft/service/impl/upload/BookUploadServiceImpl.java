@@ -20,6 +20,7 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -109,6 +110,13 @@ public class BookUploadServiceImpl implements BookUploadService {
 
         bookData.setAuthor(author);
         bookData.setGenres(bookUploadDto.getGenres());
+        bookData.setPublication(bookUploadDto.getPublication());
+
+        if (bookUploadDto.getPublicationYear() != -1) {
+            bookData.setPublication(
+                    LocalDate.of(bookUploadDto.getPublicationYear(), 1, 1)
+            );
+        }
 
         return new BookUploadResult(bookData, UploadResultOutcome.SUCCESS);
     }

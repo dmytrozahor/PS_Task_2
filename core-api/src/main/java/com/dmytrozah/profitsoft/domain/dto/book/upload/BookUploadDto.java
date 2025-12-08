@@ -25,4 +25,7 @@ public class BookUploadDto {
     @JsonProperty("publication")
     private LocalDate publication;
 
+    @JsonProperty("year_published")
+    private int publicationYear = -1;
+
 }

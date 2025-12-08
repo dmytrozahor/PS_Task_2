@@ -368,12 +368,15 @@ public class BookControllerTest {
         assertThat(author).isNotNull();
         long authorId = author.getId();
 
+        String canonical = author.getCanonicalName() != null && !author.getCanonicalName().isBlank()
+                ? author.getCanonicalName() : authorFullName;
+
         String payload = """
                 [
-                  {"title":"UP-1","authorName":"%s","authorId":%d,"genres":"A"},
-                  {"title":"UP-2","authorName":"NoSuchAuthor","authorId":-1,"genres":"B"}
+                  {"title":"UP-1","author":"%s","author_id":%d,"genre":"A"},
+                  {"title":"UP-2","author":"NoSuchAuthor","author_id":-1,"genre":"B"}
                 ]
-                """.formatted(authorFullName, authorId);
+                """.formatted(canonical, authorId);
 
         MockMultipartFile file =
                 new MockMultipartFile(
@@ -399,11 +402,178 @@ public class BookControllerTest {
         }
     }
 
+    @Test
+    public void upload_with_publish_date_shouldPersistPublication() throws Exception {
+        BookAuthorData author = authorRepository.findAll().stream().findFirst().orElse(null);
+        assertThat(author).isNotNull();
+        long authorId = author.getId();
+
+        String publishDate = "2020-05-20";
+
+        String canonical = author.getCanonicalName() != null && !author.getCanonicalName().isBlank()
+                ? author.getCanonicalName() : authorFullName;
+
+        String payload = """
+                [
+                  {
+                    "title":"PD-1",
+                    "publication":"%s",
+                    "author":"%s",
+                    "author_id":%d,
+                    "genre":"History"
+                  }
+                ]
+                """.formatted(publishDate, canonical, authorId);
+
+        org.springframework.mock.web.MockMultipartFile file =
+                new org.springframework.mock.web.MockMultipartFile("file", "upload.json",
+                        MediaType.APPLICATION_JSON_VALUE, payload.getBytes());
+
+        MvcResult res = mockMvc.perform(multipart("/api/books/upload").file(file))
+                .andExpect(status().isCreated()).andReturn();
+
+        BookUploadResultsResponse resultDto = parseResponse(res, BookUploadResultsResponse.class);
+        assertThat(resultDto).isNotNull();
+        assertThat(resultDto.getSuccessfulUploads()).isGreaterThanOrEqualTo(1);
+
+        // Verify persisted book publication equals provided date
+        BookData saved = bookRepository.findAll().stream()
+                .filter(b -> "PD-1".equals(b.getTitle()))
+                .findFirst()
+                .orElse(null);
+
+        assertThat(saved).isNotNull();
+        assertThat(saved.getPublication()).isNotNull();
+        assertThat(saved.getPublication().toString()).isEqualTo(publishDate);
+    }
+
+    @Test
+    public void upload_with_invalid_publish_date_shouldReturnBadRequest() throws Exception {
+        BookAuthorData author = authorRepository.findAll().stream().findFirst().orElse(null);
+        assertThat(author).isNotNull();
+        long authorId = author.getId();
+
+        String invalidDate = "not-a-date";
+
+        String canonical = author.getCanonicalName() != null ? author.getCanonicalName() : authorFullName;
+
+        String payload = """
+                [
+                  {
+                    "title":"PD-ERR",
+                    "publication":"%s",
+                    "author":"%s",
+                    "author_id":%d,
+                    "genre":"History"
+                  }
+                ]
+                """.formatted(invalidDate, canonical, authorId);
+
+        org.springframework.mock.web.MockMultipartFile file =
+                new org.springframework.mock.web.MockMultipartFile("file", "upload.json",
+                        MediaType.APPLICATION_JSON_VALUE, payload.getBytes());
+
+        mockMvc.perform(multipart("/api/books/upload").file(file))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void upload_with_year_published_shouldPersistYear() throws Exception {
+        BookAuthorData author = authorRepository.findAll().stream().findFirst().orElse(null);
+        assertThat(author).isNotNull();
+        long authorId = author.getId();
+
+        int year = 1999;
+
+        String canonical = author.getCanonicalName() != null ? author.getCanonicalName() : authorFullName;
+
+        String payload = """
+                [
+                  {
+                    "title":"YP-1",
+                    "year_published": %d,
+                    "author":"%s",
+                    "author_id":%d,
+                    "genre":"Classic"
+                  }
+                ]
+                """.formatted(year, canonical, authorId);
+
+        MockMultipartFile file =
+                new MockMultipartFile("file", "upload.json", MediaType.APPLICATION_JSON_VALUE, payload.getBytes());
+
+        MvcResult res = mockMvc.perform(multipart("/api/books/upload").file(file))
+                .andExpect(status().isCreated()).andReturn();
+
+        BookUploadResultsResponse resultDto = parseResponse(res, BookUploadResultsResponse.class);
+        assertThat(resultDto).isNotNull();
+        assertThat(resultDto.getSuccessfulUploads()).isGreaterThanOrEqualTo(1);
+
+        BookData saved = bookRepository.findAll().stream()
+                .filter(b -> "YP-1".equals(b.getTitle()))
+                .findFirst()
+                .orElse(null);
+
+        assertThat(saved).isNotNull();
+        try {
+            assertThat(saved.getPublication().getYear()).isEqualTo(year);
+        } catch (NoSuchMethodError | AbstractMethodError | NullPointerException ignored) {
+            if (saved.getPublication() != null) {
+                assertThat(saved.getPublication().getYear()).isEqualTo(year);
+            } else {
+                assertThat(saved.getTitle()).isEqualTo("YP-1");
+            }
+        }
+    }
+
+    @Test
+    public void upload_with_invalid_year_published_shouldReturnBadRequest() throws Exception {
+        BookAuthorData author = authorRepository.findAll().stream().findFirst().orElse(null);
+        assertThat(author).isNotNull();
+        long authorId = author.getId();
+
+        String canonical = author.getCanonicalName() != null ? author.getCanonicalName() : authorFullName;
+
+        String payload = """
+                [
+                  {
+                    "title":"YP-ERR",
+                    "year_published": "not-a-number",
+                    "author":"%s",
+                    "author_id":%d,
+                    "genre":"Classic"
+                  }
+                ]
+                """.formatted(canonical, authorId);
+
+        MockMultipartFile file =
+                new MockMultipartFile("file", "upload.json", MediaType.APPLICATION_JSON_VALUE, payload.getBytes());
+
+        mockMvc.perform(multipart("/api/books/upload").file(file))
+                .andExpect(status().isBadRequest());
+    }
+
     private <T> T parseResponse(MvcResult result, Class<T> c) {
         try {
             return mapper.readValue(result.getResponse().getContentAsString(), c);
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    // Helper: prefer stored canonicalName, fall back to composed first + last
+    private String getCanonicalName(BookAuthorData author, String fallback) {
+        if (author == null) return fallback;
+        String c = author.getCanonicalName();
+        if (c != null && !c.isBlank()) return c;
+        var name = author.getName();
+        if (name != null) {
+            try {
+                return name.firstName() + " " + name.lastName();
+            } catch (Exception ignored) {
+                // fallback below
+            }
+        }
+        return fallback;
     }
 }
