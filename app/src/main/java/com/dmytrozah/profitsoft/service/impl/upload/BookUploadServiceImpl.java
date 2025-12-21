@@ -81,10 +81,10 @@ public class BookUploadServiceImpl implements BookUploadService {
         if (bookRepository.existsByTitleAndAuthorCanonicalName(
                 bookUploadDto.getTitle(), bookUploadDto.getAuthorName())
         ) {
-            bookData = bookRepository.findByAuthorCanonicalNameAndTitle(
+            bookData = bookRepository.findAllByAuthorCanonicalNameAndTitle(
                     bookUploadDto.getAuthorName(),
                     bookUploadDto.getTitle()
-            );
+            ).getFirst();
 
             return new BookUploadResult(bookData, UploadResultOutcome.TITLE_AUTHOR_EXISTS);
         }
@@ -110,12 +110,15 @@ public class BookUploadServiceImpl implements BookUploadService {
 
         bookData.setAuthor(author);
         bookData.setGenres(bookUploadDto.getGenres());
-        bookData.setPublication(bookUploadDto.getPublication());
 
-        if (bookUploadDto.getPublicationYear() != -1) {
+        if (bookUploadDto.getPublication() != null) {
+            bookData.setPublication(bookUploadDto.getPublication());
+        } else if (bookUploadDto.getPublicationYear() != -1) {
             bookData.setPublication(
                     LocalDate.of(bookUploadDto.getPublicationYear(), 1, 1)
             );
+        } else {
+            bookData.setPublication(LocalDate.now());
         }
 
         return new BookUploadResult(bookData, UploadResultOutcome.SUCCESS);

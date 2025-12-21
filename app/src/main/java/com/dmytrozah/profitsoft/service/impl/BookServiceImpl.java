@@ -2,12 +2,17 @@ package com.dmytrozah.profitsoft.service.impl;
 
 import com.dmytrozah.profitsoft.domain.dto.ReportGenerationDto;
 import com.dmytrozah.profitsoft.domain.dto.author.AuthorDetailsDto;
-import com.dmytrozah.profitsoft.domain.dto.book.*;
+import com.dmytrozah.profitsoft.domain.dto.book.BookDetailsDto;
+import com.dmytrozah.profitsoft.domain.dto.book.BookInfoDto;
+import com.dmytrozah.profitsoft.domain.dto.book.BookListDto;
+import com.dmytrozah.profitsoft.domain.dto.book.BookSaveDto;
+import com.dmytrozah.profitsoft.domain.dto.book.query.BookQueryDto;
 import com.dmytrozah.profitsoft.domain.entity.BookAuthorData;
 import com.dmytrozah.profitsoft.domain.entity.BookData;
 import com.dmytrozah.profitsoft.domain.entity.mapper.AuthorMapper;
 import com.dmytrozah.profitsoft.domain.entity.mapper.BookMapper;
 import com.dmytrozah.profitsoft.domain.repository.BookRepository;
+import com.dmytrozah.profitsoft.domain.repository.spec.BookSpecifications;
 import com.dmytrozah.profitsoft.service.BookAuthorService;
 import com.dmytrozah.profitsoft.service.BookService;
 import com.dmytrozah.profitsoft.service.exception.BookNotFoundException;
@@ -16,6 +21,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -60,23 +67,20 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public BookListDto listQuery(BookQueryDto queryDto) {
-        final Page<BookData> page;
+        Pageable pageable = PageRequest.of(
+                queryDto.getPage(),
+                queryDto.getSize()
+        );
 
-        if (queryDto.getAuthorId() == null) {
-            page = bookRepository.findAll(PageRequest.of(queryDto.getPage(), queryDto.getSize()));
-        } else  {
-            page = bookRepository.findAllByAuthorId(
-                    Long.parseLong(queryDto.getAuthorId()),
-                    PageRequest.of(queryDto.getPage(), queryDto.getSize())
-            );
-        }
+        Specification<BookData> spec = BookSpecifications.fromQuery(queryDto);
 
-        final List<BookData> data = page.getContent();
-        final List<BookInfoDto> infos = data.stream().map(bookMapper::toInfoDto).toList();
+        Page<BookData> page = bookRepository.findAll(spec, pageable);
+
+        List<BookInfoDto> dtos = page.stream().map(bookMapper::toInfoDto).toList();
 
         return BookListDto.builder()
                 .totalPages(page.getTotalPages())
-                .infos(infos)
+                .infos(dtos)
                 .build();
     }
 

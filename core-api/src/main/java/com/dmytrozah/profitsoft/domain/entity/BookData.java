@@ -25,12 +25,21 @@ public class BookData {
 
     private String title;
 
+    @Column(name = "author_canonical_name")
     private String authorCanonicalName;
 
     private String genres;
 
+    @Column(nullable = false)
     private LocalDate publication;
 
     @UpdateTimestamp
     private Instant lastUpdateTime;
+
+    @PrePersist
+    public void prePersist() {
+        if (publication == null) {
+            publication = LocalDate.now();
+        }
+    }
 }

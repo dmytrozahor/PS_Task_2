@@ -1,8 +1,10 @@
-package com.dmytrozah.profitsoft.domain.dto.book;
+package com.dmytrozah.profitsoft.domain.dto.book.query;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+
+import java.util.List;
 
 /**
  * Lookup criteria for {@link com.dmytrozah.profitsoft.domain.entity.BookData}
@@ -18,6 +20,10 @@ public class BookQueryDto {
     @Builder.Default
     @JsonProperty("author_id")
     private String authorId = "-1";
+
+    @Builder.Default
+    @JsonProperty("filters")
+    private List<BookQueryDtoFilter> filters = List.of();
 
     // offset <=> from
     @Builder.Default

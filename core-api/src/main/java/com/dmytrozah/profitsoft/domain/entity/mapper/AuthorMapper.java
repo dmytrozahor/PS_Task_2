@@ -19,6 +19,7 @@ public interface AuthorMapper {
 
     @Mapping(target = "address", source = "postalAddress")
     @Mapping(target = "name", source = "name")
+    @Mapping(target = "canonicalName", source = "name", qualifiedByName = "nameToStringMapper")
     @Mapping(target = "books", source = "author", qualifiedByName = "computeBookCount")
     AuthorDetailsDto toDetailsDto(BookAuthorData author, @Context BookRepository bookRepository);
 

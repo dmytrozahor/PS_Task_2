@@ -16,6 +16,9 @@ public class AuthorDetailsDto {
     @JsonProperty("name")
     private AuthorNameDto name;
 
+    @JsonProperty("canonical_name")
+    private String canonicalName;
+
     @JsonProperty("email")
     private String email;
 

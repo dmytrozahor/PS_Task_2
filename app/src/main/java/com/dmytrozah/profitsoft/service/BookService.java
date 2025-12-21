@@ -3,8 +3,8 @@ package com.dmytrozah.profitsoft.service;
 import com.dmytrozah.profitsoft.domain.dto.ReportGenerationDto;
 import com.dmytrozah.profitsoft.domain.dto.book.BookDetailsDto;
 import com.dmytrozah.profitsoft.domain.dto.book.BookListDto;
-import com.dmytrozah.profitsoft.domain.dto.book.BookQueryDto;
 import com.dmytrozah.profitsoft.domain.dto.book.BookSaveDto;
+import com.dmytrozah.profitsoft.domain.dto.book.query.BookQueryDto;
 import jakarta.servlet.http.HttpServletResponse;
 
 public interface BookService {

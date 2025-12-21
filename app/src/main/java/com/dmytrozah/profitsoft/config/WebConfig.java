@@ -1,17 +1,13 @@
 package com.dmytrozah.profitsoft.config;
 
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @Configuration
-@EnableWebMvc
 @ComponentScan(basePackages = "com.dmytrozah.profitsoft.rest.controller")
 public class WebConfig {
 
@@ -20,18 +16,13 @@ public class WebConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
 
-        config.addAllowedHeader("https://localhost:9090");
+        config.addAllowedOrigin("http://localhost:3050");
+        config.addAllowedOriginPattern("*");
+        config.addAllowedMethod("*");
+        config.addAllowedHeader("*");
         source.registerCorsConfiguration("/**", config);
 
         return new CorsFilter(source);
-    }
-
-    @Bean
-    public FilterRegistrationBean<CorsFilter> corsFilterRegistrationBean() {
-        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(corsFilter());
-        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
-
-        return bean;
     }
 
 }
