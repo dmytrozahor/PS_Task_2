@@ -23,6 +23,7 @@ public interface BookMapper {
     @Mapping(target = "author.id", source = "authorId")
     @Mapping(target = "lastUpdateTime", ignore = true)
     @Mapping(target = "publication", source = "publishDate")
+    @Mapping(target = "authorCanonicalName", source = "authorName")
     BookData toEntity(BookSaveDto saveDto);
 
     @Mapping(target = "id", source = "id")

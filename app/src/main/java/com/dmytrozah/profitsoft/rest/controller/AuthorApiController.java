@@ -38,7 +38,7 @@ public class AuthorApiController {
         return authorService.resolveAuthorDetails(id);
     }
 
-    @PostMapping("_list")
+    @PostMapping({"_list", ""})
     public AuthorListDto getAuthors(@Valid @RequestBody AuthorQueryDto queryDto) {
         return authorService.query(queryDto);
     }
